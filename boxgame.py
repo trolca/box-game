@@ -13,6 +13,8 @@ playertext = '⬜'
 player = [0, 13]
 boxes = [[2, 0], [5, 0]]
 
+#test
+
 def drawScreen(width, height):
     for y in range(-1, height+1):
         for x in range(-1, width+1):
