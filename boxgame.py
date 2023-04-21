@@ -1,6 +1,3 @@
 import os
+import msvcrt as ms
 
-print("sus")
-input("suss")
-os.system("cls")
-print("asduasd")
