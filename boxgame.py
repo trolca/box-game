@@ -11,8 +11,8 @@ renderMode = 1
 running = True
 canMove = True
 score = 0
-sleepTime = 1
-boxesPerTick = 1
+sleepTime = 1 #how many sacound is next tick
+boxesPerTick = 1 #defines how many boxes spawn each tick
 
 # border's size
 height = 17
@@ -53,6 +53,7 @@ def drawScreen(width, height):
                 if not hasbox: print(whitespace, end="")
 
         print()
+    updateHeader()
 
 #groups all the boxes in a specific line
 def setBoxesByYInSpecificHeight(boxes, height):
@@ -89,7 +90,8 @@ def updateLine(line):
 
     if(existingBoxes == [] and line != player[1]):
         cursor.setCursorAt(line+2)
-        print(centerBorder, end="")
+        if(line == height): print(backround*14, end="")
+        else: print(centerBorder, end="")
         cursor.setCursorAt(height+3)
         if(cursor.cursorPosition() == height+3): print(whitespace*14, end="")
 
@@ -108,7 +110,7 @@ def checkCollisions():
             
             for i in range(2,height+2):
                 cursor.setCursorAt(i)
-                print(whitespace*(width//3),"GAME OVER", "      ", end="")
+                print(backround+whitespace*((width//3)-1),"GAME OVER", "      ", end="")
 
             cursor.setCursorAt(height+3)
             running = False
@@ -149,6 +151,7 @@ def updateHeader():
 
 
 
+
 #bassicaly moves all of the boxes down
 def boxLogic():
     global canMove
@@ -166,7 +169,7 @@ def boxLogic():
         for i in range(-1,lenght-1):
             moveBox(i, 1)
 
-            if boxes[i][1] >= height-1: 
+            if boxes[i][1] > height-1: 
                 removeBoxes.append(boxes[i])
 
         for box in removeBoxes:
@@ -196,7 +199,7 @@ while(running):
 
     x = ms.getch()
     x = ms.getch()
-
+    if not running: break
     if(renderMode == 0): os.system("cls")
     # reading input from keyboard
     if(x == b'M'):  
