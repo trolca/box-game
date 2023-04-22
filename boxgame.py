@@ -7,29 +7,36 @@ import console_cursor as cursor
 #1 - only cursor flicker mode (redraws only specific regions where there was movement)
 renderMode = 1
 
+# border's size
 height = 17
 width = 12
 
+# gfx
 backround = "▒▒"
 boxtext = "⛋ "
 playertext = '⬜'
 whitespace = '  '
-
 centerBorder = "▒▒"+(whitespace*width)+"▒▒"
 
-os.system("cls")
-
+# positioning
 # 0 - x, 1 - y
 player = [0, 13]
-boxes = [[2, 0], [5, 0], [3, 4], [7, 4], [1, 7]]
+boxes = [[2, 4], [5, 4], [3, 4], [7, 4], [1, 4]]
+boxesAmount = 5
+actualFallingBox = 0
+boxesStartYPos = 0
 
+# I don't know what
 LINE_UP = '\033[2A'
 LINE_DOWN = '\033[1B'
 LINE_CLEAR = '\x1b[2K'
 
 
-#test
 
+os.system("cls")
+
+# ---- FUNCTIONS -----
+# make screen borders
 def drawScreen(width, height):
     for y in range(-1, height+1):
         for x in range(-1, width+1):
@@ -107,23 +114,44 @@ def moveBox(boxIndex, howMuchY):
 
 drawScreen(width, height)
 
-    
+for i in boxes:
+    i[1] = boxesStartYPos
+
+x = 0
+
+# everything in this loop is performed in each frame
 while(True):
-    
-    x = ms.getch()
+
     x = ms.getch()
 
-    if(renderMode == 0): os.system("cls")
 
+    if(boxes[actualFallingBox][1] > height -2):
+        moveBox(actualFallingBox, -boxes[actualFallingBox][1])
+        actualFallingBox += 1
+
+    moveBox(actualFallingBox,1)
+
+    #x = ms.getch()
+    #if(renderMode == 0): os.system("cls")
+
+    # reading input from keyboard
     if(x == b'M'):  
-        player[0] += 1#prawo
+        player[0] += 1  # right arrow pressed
     elif (x == b'K'):
-        player[0] -= 1 #lewo
+        player[0] -= 1  # left arrow pressed
     
-    if(player[0] < 0): player[0] = 0
-    elif(player[0] > width): player[0] = width
+    # make player can't go beyond borders
+    if(player[0] < 0):
+        player[0] = 0
+    elif(player[0] > width - 1): 
+        player[0] = width - 1
     
-    if(renderMode == 1): updatePlayer()
-    else: drawScreen(width, height)
-    #moveBox(1, 1)
+    # update screen
+    if(renderMode == 1):
+        updatePlayer()
+        updateBoxesOnLine(3)
+    else:
+        os.system("cls")
+        drawScreen(width, height)
 
+    
