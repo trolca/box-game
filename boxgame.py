@@ -2,10 +2,17 @@ import os
 import msvcrt as ms
 import time
 import console_cursor as cursor
+import _thread as thread
+import random as rng
 
 #0 - flicker mode (redraws the whole screen every move)
 #1 - only cursor flicker mode (redraws only specific regions where there was movement)
 renderMode = 1
+running = True
+canMove = True
+score = 0
+sleepTime = 1
+boxesPerTick = 1
 
 # border's size
 height = 17
@@ -21,17 +28,9 @@ centerBorder = "▒▒"+(whitespace*width)+"▒▒"
 # positioning
 # 0 - x, 1 - y
 player = [0, 13]
-boxes = [[2, 4], [5, 4], [3, 4], [7, 4], [1, 4]]
+boxes = [[2, 0], [5, 0]]
 boxesAmount = 5
-actualFallingBox = 0
 boxesStartYPos = 0
-
-# I don't know what
-LINE_UP = '\033[2A'
-LINE_DOWN = '\033[1B'
-LINE_CLEAR = '\x1b[2K'
-
-
 
 os.system("cls")
 
@@ -55,90 +54,158 @@ def drawScreen(width, height):
 
         print()
 
-#draws the correct possition of the player
-def updatePlayer():
-    cursor.lineUp(5)
-
-    print(backround, end="")
-
-    for i in range(width):
-        if(player[0] == i): print(playertext, end="")
-        else: print(whitespace, end="")
-
-    print(backround, end="")
-
-    cursor.lineDown(5)
-
 #groups all the boxes in a specific line
 def setBoxesByYInSpecificHeight(boxes, height):
     newBoxes = []
     for box in boxes:
         if(box[1] == height): newBoxes.append(box)
     return newBoxes
-        
+
 #it updates a specific line of boxes on the screen
-def updateBoxesOnLine(line):
+def updateLine(line):
     existingBoxes = setBoxesByYInSpecificHeight(boxes, line)
    
-   
-    cursor.lineUp(height-(line-1))
+    cursor.setCursorAt(line+2)
     print(backround, end="")
-
+    
     for i in range(width):
-        isBox = False
-        for box in existingBoxes:  
+        isSomething = False
+
+        if(line == player[1] and player[0] == i):
+            print(playertext, end="")
+            isSomething = True
+
+        for box in existingBoxes:
+            if isSomething: break
             if(box[0] == i): 
                 print(boxtext, end="")
-                isBox = True
-        if(not isBox): print(whitespace, end="")
+                isSomething = True
+
+        if(not isSomething): print(whitespace, end="")
            
 
     print(backround, end="")
-    cursor.lineDown(height-(line-1))
+    cursor.setCursorAt(height+3)
 
-    if existingBoxes == []:
-        cursor.lineUp(height-(line-1))
+    if(existingBoxes == [] and line != player[1]):
+        cursor.setCursorAt(line+2)
         print(centerBorder, end="")
-        cursor.lineDown(height-(line-1))
+        cursor.setCursorAt(height+3)
+        if(cursor.cursorPosition() == height+3): print(whitespace*14, end="")
 
 #moves a specific box (maybe change? idk)
 def moveBox(boxIndex, howMuchY):
     oldPos = boxes[boxIndex][1]
     boxes[boxIndex][1] += howMuchY
-    updateBoxesOnLine(oldPos)
-    updateBoxesOnLine(boxes[boxIndex][1])
+    updateLine(oldPos)
+    updateLine(boxes[boxIndex][1])
 
+#check if the player is inside of a box
+def checkCollisions():
+    global running
+    for box in boxes:
+        if box[0] == player[0] and box[1] == player[1]:
+            
+            for i in range(2,height+2):
+                cursor.setCursorAt(i)
+                print(whitespace*(width//3),"GAME OVER", "      ", end="")
+
+            cursor.setCursorAt(height+3)
+            running = False
+            return
+        
+#prints the score and upps the difficulty of the game
+def updateHeader():
+    global score
+    global sleepTime
+    global boxesPerTick
+    score += 1
+    cursor.setCursorAt(0)
+    print(backround*4,"SCORE: "+str(score),backround*4)
+    cursor.setCursorAt(height+3)
+    match score:
+        case 25:
+            sleepTime = 0.9
+        case 50:
+            sleepTime = 0.85
+            boxesPerTick = 2
+        case 95:
+            sleepTime = 0.7
+        case 125:
+            boxesPerTick = 3
+        case 140:
+            sleepTime = 0.65
+        case 165:
+            sleepTime = 0.6
+        case 200:
+            sleepTime = 0.5
+        case 225:
+            sleepTime = 0.45
+            boxesPerTick = 4
+        case 300:
+            sleepTime = 0.4
+        case 400:
+            sleepTime = 0.3
+
+
+
+#bassicaly moves all of the boxes down
+def boxLogic():
+    global canMove
+    global running
+    global sleepTime
+    global boxesPerTick
+    while(running):
+
+        time.sleep(sleepTime)
+
+        canMove = False
+        removeBoxes = []
+        lenght = len(boxes)
+
+        for i in range(-1,lenght-1):
+            moveBox(i, 1)
+
+            if boxes[i][1] >= height-1: 
+                removeBoxes.append(boxes[i])
+
+        for box in removeBoxes:
+            line = box[1]
+            boxes.remove(box)
+            updateLine(line)
+
+        checkCollisions()
+        updateHeader()
+
+        for i in range(boxesPerTick):
+            boxes.append([rng.randint(0, width), 0])
+        updateLine(0)
+
+        canMove = True
 
 
 
 
 drawScreen(width, height)
 
-for i in boxes:
-    i[1] = boxesStartYPos
-
-x = 0
+#the boxLogic function is called in a different thread to make the boxes not dependent on players movement
+thread.start_new_thread(boxLogic, ())
 
 # everything in this loop is performed in each frame
-while(True):
+while(running):
 
     x = ms.getch()
+    x = ms.getch()
 
-
-    if(boxes[actualFallingBox][1] > height -2):
-        moveBox(actualFallingBox, -boxes[actualFallingBox][1])
-        actualFallingBox += 1
-
-    moveBox(actualFallingBox,1)
-
-    #x = ms.getch()
-    #if(renderMode == 0): os.system("cls")
-
+    if(renderMode == 0): os.system("cls")
     # reading input from keyboard
     if(x == b'M'):  
         player[0] += 1  # right arrow pressed
     elif (x == b'K'):
         player[0] -= 1  # left arrow pressed
+    elif(x == b'\x1b'):
+         running = False
+    
     
     # make player can't go beyond borders
     if(player[0] < 0):
@@ -148,8 +215,10 @@ while(True):
     
     # update screen
     if(renderMode == 1):
-        updatePlayer()
-        updateBoxesOnLine(3)
+        while not canMove:
+            time.sleep(0.001)
+        updateLine(player[1])
+        checkCollisions()
     else:
         os.system("cls")
         drawScreen(width, height)
