@@ -10,6 +10,7 @@ import random as rng
 renderMode = 1
 running = True
 canMove = True
+
 score = 0
 sleepTime = 1 #after how much secound is next tick
 boxesPerTick = 1 #defines how many boxes spawn each tick
@@ -36,6 +37,7 @@ boxesStartYPos = 0
 os.system("cls")
 
 #aaaaa
+#bbbbb
 
 # ---- FUNCTIONS -----
 # make screen borders
@@ -43,9 +45,10 @@ def drawScreen(width, height):
     for y in range(-1, height+1):
         for x in range(-1, width+1):
 
-            if (y == -1 or y == height or x == -1 or x == width): print(backround, end="")
+            if (y == height or (x == -1 and y != -1) or (x == width and y != -1)): print(backround, end="")
+            elif (y == -1 and x == -1): print(backround*5,"SCORE: "+str(score),backround*4, end="")
             elif (player[0] == x and player[1] == y): print(playertext, end="")
-            else: 
+            elif(y != -1): 
                 hasbox = False
 
                 for box in boxes:
@@ -56,7 +59,6 @@ def drawScreen(width, height):
                 if not hasbox: print(whitespace, end="")
 
         print()
-    updateHeader()
 
 #groups all the boxes in a specific line
 def setBoxesByYInSpecificHeight(boxes, height):
@@ -108,7 +110,7 @@ def checkCollisions():
     global boxes
     for box in boxes:
         if box[0] == player[0] and box[1] == player[1]:
-            
+            canMove = False
             for i in range(2,height+2):
                 cursor.setCursorAt(i)
                 print(centerBorder, end="")
@@ -118,7 +120,7 @@ def checkCollisions():
             print(backround, "YOU SCORED ", score, " POINTS")
             print(backround, "HIT ANY KEY TO RESTART")
 
-            time.sleep(0.5)
+            time.sleep(2)
             
             ms.getch()
             cursor.setCursorAt(player[1]+2)
@@ -143,35 +145,35 @@ def updateHeader():
     global sleepTime
     global boxesPerTick
     score += 1
-
-    cursor.setCursorAt(0)
-    print(backround*4,"SCORE: "+str(score),backround*4)
-    cursor.setCursorAt(height+3)
+    if(renderMode == 1):
+        cursor.setCursorAt(0)
+        print(backround*4,"SCORE: "+str(score),backround*4)
+        cursor.setCursorAt(height+3)
     match score:
         case 15:
             sleepTime = 0.9
         case 30:
             sleepTime = 0.8
-        case 50:
-            sleepTime = 0.75
-            boxesPerTick = 2
-        case 95:
+        case 40:
             sleepTime = 0.7
-        case 125:
+            boxesPerTick = 2
+        case 80:
+            sleepTime = 0.65
+        case 100:
             boxesPerTick = 3
         case 140:
-            sleepTime = 0.65
-        case 165:
             sleepTime = 0.6
-        case 200:
+        case 165:
             sleepTime = 0.5
+        case 200:
+            sleepTime = 0.4
         case 225:
-            sleepTime = 0.45
+            sleepTime = 0.35
             boxesPerTick = 4
         case 300:
-            sleepTime = 0.4
-        case 400:
             sleepTime = 0.3
+        case 400:
+            sleepTime = 0.2
 
 
 
@@ -186,6 +188,8 @@ def boxLogic():
 
         time.sleep(sleepTime)
 
+        if(renderMode == 0): os.system("cls")
+
         canMove = False
         removeBoxes = []
         updateLines = set({})
@@ -199,22 +203,26 @@ def boxLogic():
             if box[1] > height-1: 
                 removeBoxes.append(box)
 
-        for i in updateLines:
-            updateLine(i)
-
         for box in removeBoxes:
             line = box[1]
             if boxes == []: break
             boxes.remove(box)
-            updateLine(line)
+            updateLines.add(line)
+
+        if(renderMode == 1):
+            for i in updateLines:
+                updateLine(i)
 
         checkCollisions()
         updateHeader()
 
+
         for i in range(boxesPerTick):
             newBox = [rng.randint(0, width), 0]
             if not boxes.__contains__(newBox): boxes.append([rng.randint(0, width), 0])
-        updateLine(0)
+        if(renderMode == 1): 
+            updateLine(0)
+        else: drawScreen(width, height)
 
         canMove = True
 
@@ -229,7 +237,11 @@ thread.start_new_thread(boxLogic, ())
 # everything in this loop is performed in each frame
 while(running):
 
+    
+
     x = ms.getch()
+
+    if(renderMode == 0): os.system("cls")
 
     if(x == b'\x00'): x = ms.getch()
     if not running: break
@@ -256,7 +268,6 @@ while(running):
         updateLine(player[1])
         checkCollisions()
     else:
-        os.system("cls")
         drawScreen(width, height)
 
     
