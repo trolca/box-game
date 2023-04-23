@@ -3,7 +3,7 @@ import time
 
 LINE_UP = '\033[2A'
 LINE_DOWN = '\033[1B'
-LINE_CLEAR = '\x1b[2K'
+LINE_CLEAR = '\033[2K'
 CURSOR_INVISIBLE = '\033[?25l'
 CURSOR_VISIBLE = '\033[?25h'
 
@@ -23,10 +23,15 @@ def lineDown(howManyTimes):
      sys.stdout.flush()
 
 def setCursorAt(line):
+    global cursorPosition
     line = str(line)
     cursorPosition = line
     LINE_AT = '\033['+line+';0H'
     print(LINE_AT, end="")
+    sys.stdout.flush()
+
+def clearLine():
+    print(LINE_CLEAR, end="")
     sys.stdout.flush()
 
 def setCursorVisible(isVisible):

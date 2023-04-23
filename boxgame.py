@@ -11,7 +11,7 @@ renderMode = 1
 running = True
 canMove = True
 score = 0
-sleepTime = 1 #how many sacound is next tick
+sleepTime = 1 #after how much secound is next tick
 boxesPerTick = 1 #defines how many boxes spawn each tick
 
 # border's size
@@ -24,6 +24,7 @@ boxtext = "⛋ "
 playertext = '⬜'
 whitespace = '  '
 centerBorder = "▒▒"+(whitespace*width)+"▒▒"
+centerBorderPlayer = "▒▒"+(whitespace*width)+"▒▒▒"
 
 # positioning
 # 0 - x, 1 - y
@@ -67,7 +68,6 @@ def setBoxesByYInSpecificHeight(boxes, height):
 #it updates a specific line of boxes on the screen
 def updateLine(line):
     existingBoxes = setBoxesByYInSpecificHeight(boxes, line)
-   
     cursor.setCursorAt(line+2)
     print(backround, end="")
     
@@ -95,34 +95,42 @@ def updateLine(line):
         if(line == height): print(backround*14, end="")
         else: print(centerBorder, end="")
         cursor.setCursorAt(height+3)
-        if(cursor.cursorPosition() == height+3): print(whitespace*14, end="")
 
 #moves a specific box (maybe change? idk)
 
 #check if the player is inside of a box
 def checkCollisions():
+    global score
     global running
+    global canMove
+    global sleepTime
+    global boxesPerTick
+    global boxes
     for box in boxes:
         if box[0] == player[0] and box[1] == player[1]:
             
             for i in range(2,height+2):
                 cursor.setCursorAt(i)
-                print(backround+whitespace*(width), end="")
+                print(centerBorder, end="")
 
             cursor.setCursorAt(9)
             print(backround+whitespace*((width//3)-1),"GAME OVER")
             print(backround, "YOU SCORED ", score, " POINTS")
             print(backround, "HIT ANY KEY TO RESTART")
-            running = False
+
+            time.sleep(0.5)
             
             ms.getch()
-            #score = 1
-            updateHeader(True)
+            cursor.setCursorAt(player[1]+2)
+            cursor.clearLine()
+            score = 1
+            updateHeader()
             boxes.clear()
 
             for line in range(1, height):
                 updateLine(line)
 
+            cursor.setCursorAt(0)
             running = True
             canMove = True
             sleepTime = 1
@@ -130,14 +138,11 @@ def checkCollisions():
             return
         
 #prints the score and upps the difficulty of the game
-def updateHeader(resetScore = False):
+def updateHeader():
     global score
     global sleepTime
     global boxesPerTick
     score += 1
-
-    if(resetScore):
-        score = 0
 
     cursor.setCursorAt(0)
     print(backround*4,"SCORE: "+str(score),backround*4)
@@ -199,6 +204,7 @@ def boxLogic():
 
         for box in removeBoxes:
             line = box[1]
+            if boxes == []: break
             boxes.remove(box)
             updateLine(line)
 
@@ -224,7 +230,8 @@ thread.start_new_thread(boxLogic, ())
 while(running):
 
     x = ms.getch()
-    x = ms.getch()
+
+    if(x == b'\x00'): x = ms.getch()
     if not running: break
     if(renderMode == 0): os.system("cls")
     # reading input from keyboard
