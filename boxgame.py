@@ -34,6 +34,8 @@ boxesStartYPos = 0
 
 os.system("cls")
 
+#aaaaa
+
 # ---- FUNCTIONS -----
 # make screen borders
 def drawScreen(width, height):
