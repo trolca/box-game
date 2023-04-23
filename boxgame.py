@@ -96,11 +96,6 @@ def updateLine(line):
         if(cursor.cursorPosition() == height+3): print(whitespace*14, end="")
 
 #moves a specific box (maybe change? idk)
-def moveBox(boxIndex, howMuchY):
-    oldPos = boxes[boxIndex][1]
-    boxes[boxIndex][1] += howMuchY
-    updateLine(oldPos)
-    updateLine(boxes[boxIndex][1])
 
 #check if the player is inside of a box
 def checkCollisions():
@@ -126,10 +121,12 @@ def updateHeader():
     print(backround*4,"SCORE: "+str(score),backround*4)
     cursor.setCursorAt(height+3)
     match score:
-        case 25:
+        case 15:
             sleepTime = 0.9
+        case 30:
+            sleepTime = 0.8
         case 50:
-            sleepTime = 0.85
+            sleepTime = 0.75
             boxesPerTick = 2
         case 95:
             sleepTime = 0.7
@@ -164,13 +161,19 @@ def boxLogic():
 
         canMove = False
         removeBoxes = []
-        lenght = len(boxes)
+        updateLines = set({})
+        line = 0
 
-        for i in range(-1,lenght-1):
-            moveBox(i, 1)
+        for box in boxes:
+            updateLines.add(box[1])
+            box[1] += 1
+            updateLines.add(box[1])
 
-            if boxes[i][1] > height-1: 
-                removeBoxes.append(boxes[i])
+            if box[1] > height-1: 
+                removeBoxes.append(box)
+
+        for i in updateLines:
+            updateLine(i)
 
         for box in removeBoxes:
             line = box[1]
@@ -181,7 +184,8 @@ def boxLogic():
         updateHeader()
 
         for i in range(boxesPerTick):
-            boxes.append([rng.randint(0, width), 0])
+            newBox = [rng.randint(0, width), 0]
+            if not boxes.__contains__(newBox): boxes.append([rng.randint(0, width), 0])
         updateLine(0)
 
         canMove = True
