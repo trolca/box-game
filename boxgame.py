@@ -105,18 +105,38 @@ def checkCollisions():
             
             for i in range(2,height+2):
                 cursor.setCursorAt(i)
-                print(backround+whitespace*((width//3)-1),"GAME OVER", "      ", end="")
+                print(backround+whitespace*(width), end="")
 
-            cursor.setCursorAt(height+3)
+            cursor.setCursorAt(9)
+            print(backround+whitespace*((width//3)-1),"GAME OVER")
+            print(backround, "YOU SCORED ", score, " POINTS")
+            print(backround, "HIT ANY KEY TO RESTART")
             running = False
+            
+            ms.getch()
+            #score = 1
+            updateHeader(True)
+            boxes.clear()
+
+            for line in range(1, height):
+                updateLine(line)
+
+            running = True
+            canMove = True
+            sleepTime = 1
+            boxesPerTick = 1
             return
         
 #prints the score and upps the difficulty of the game
-def updateHeader():
+def updateHeader(resetScore = False):
     global score
     global sleepTime
     global boxesPerTick
     score += 1
+
+    if(resetScore):
+        score = 0
+
     cursor.setCursorAt(0)
     print(backround*4,"SCORE: "+str(score),backround*4)
     cursor.setCursorAt(height+3)
