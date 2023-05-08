@@ -34,6 +34,7 @@ boxes = [[2, 0], [5, 0]]
 boxesAmount = 5
 boxesStartYPos = 0
 
+
 os.system("cls")
 
 #aaaaa
@@ -61,7 +62,7 @@ def drawScreen(width, height):
         print()
 
 #groups all the boxes in a specific line
-def setBoxesByYInSpecificHeight(boxes, height):
+def getBoxesByYInSpecificHeight(boxes, height):
     newBoxes = []
     for box in boxes:
         if(box[1] == height): newBoxes.append(box)
@@ -69,9 +70,11 @@ def setBoxesByYInSpecificHeight(boxes, height):
 
 #it updates a specific line of boxes on the screen
 def updateLine(line):
-    existingBoxes = setBoxesByYInSpecificHeight(boxes, line)
+    existingBoxes = getBoxesByYInSpecificHeight(boxes, line)
     cursor.setCursorAt(line+2)
     print(backround, end="")
+    isPlayer = False
+
     
     for i in range(width):
         isSomething = False
@@ -79,6 +82,7 @@ def updateLine(line):
         if(line == player[1] and player[0] == i):
             print(playertext, end="")
             isSomething = True
+            isPlayer = True
 
         for box in existingBoxes:
             if isSomething: break
@@ -88,8 +92,8 @@ def updateLine(line):
 
         if(not isSomething): print(whitespace, end="")
            
-
-    print(backround, end="")
+    if not isPlayer: print(backround, end="")
+    else: print(backround+" ", end="")
     cursor.setCursorAt(height+3)
 
     if(existingBoxes == [] and line != player[1]):
@@ -111,7 +115,8 @@ def checkCollisions():
     for box in boxes:
         if box[0] == player[0] and box[1] == player[1]:
             canMove = False
-            for i in range(2,height+2):
+            sleepTime = -1
+            for i in range(2,height+1):
                 cursor.setCursorAt(i)
                 print(centerBorder, end="")
 
@@ -122,18 +127,16 @@ def checkCollisions():
 
             time.sleep(2)
             
-            ms.getch()
-            cursor.setCursorAt(player[1]+2)
-            cursor.clearLine()
+            x = ms.getch()
+            if(x == b'\x00'): x = ms.getch()
             score = 1
             updateHeader()
             boxes.clear()
 
-            for line in range(1, height):
+            for line in range(2, height+1):
                 updateLine(line)
 
             cursor.setCursorAt(0)
-            running = True
             canMove = True
             sleepTime = 1
             boxesPerTick = 1
@@ -149,6 +152,8 @@ def updateHeader():
         cursor.setCursorAt(0)
         print(backround*4,"SCORE: "+str(score),backround*4)
         cursor.setCursorAt(height+3)
+    
+    if sleepTime == -1: return
     match score:
         case 15:
             sleepTime = 0.9
@@ -185,8 +190,12 @@ def boxLogic():
     global sleepTime
     global boxesPerTick
     while(running):
+        
 
         time.sleep(sleepTime)
+
+        while sleepTime == -1:
+            time.sleep(0.1)
 
         if(renderMode == 0): os.system("cls")
 
