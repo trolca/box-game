@@ -1,3 +1,4 @@
+#Zrobione przez Szymona (trolca) i Norberta (norbertc)
 import os
 import msvcrt as ms
 import time
