@@ -20,13 +20,13 @@ boxesPerTick = 1 #defines how many boxes spawn each tick
 height = 17
 width = 12
 
-#boxtext = "⛋ "
-#playertext = '⬜'
+boxtext = "⛋ "
+playertext = '⬜'
 
 # gfx
 backround = "▒▒"
-boxtext = "■ "
-playertext = '# '
+#boxtext = "■ "
+#playertext = '# '
 whitespace = '  '
 centerBorder = "▒▒"+(whitespace*width)+"▒▒"
 centerBorderPlayer = "▒▒"+(whitespace*width)+"▒▒▒"
@@ -96,9 +96,9 @@ def updateLine(line):
 
         if(not isSomething): print(whitespace, end="")
     
-    print(backround, end="")
-#    if not isPlayer: print(backround, end="")
-#    else: print(backround+" ", end="")
+#    print(backround, end="")
+    if not isPlayer: print(backround, end="")
+    else: print(backround+" ", end="")
     cursor.setCursorAt(height+3)
 
     if(existingBoxes == [] and line != player[1]):
@@ -121,7 +121,7 @@ def checkCollisions():
         if box[0] == player[0] and box[1] == player[1]:
             canMove = False
             sleepTime = -1
-            for i in range(2,height+1):
+            for i in range(2,height+2):
                 cursor.setCursorAt(i)
                 print(centerBorder, end="")
 
@@ -138,7 +138,7 @@ def checkCollisions():
             updateHeader()
             boxes.clear()
 
-            for line in range(2, height+1):
+            for line in range(2, height+2):
                 updateLine(line)
 
             cursor.setCursorAt(0)
